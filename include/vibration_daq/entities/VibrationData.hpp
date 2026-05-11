@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <vector>
 #include "RecordingMode.hpp"
 
 namespace vibration_daq {
