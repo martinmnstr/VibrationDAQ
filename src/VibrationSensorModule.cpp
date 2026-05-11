@@ -28,16 +28,18 @@ namespace vibration_daq {
             exit(1);
         }
 
-        // keep processor busy to increase time of SPI disable to ~40us
-        for (int i = 0; i < 2000; ++i) {
-            // fixes the bug of shifting MISO 1 byte
-        }
+        // ADcmXL3021 requires a minimum stall time (~16us) between SPI word transactions.
+        // An empty spin-loop is unreliable: it gets optimized away at -O2 and its duration
+        // varies with CPU clock speed (Pi 4 at 1.8GHz runs it ~4x faster than a Pi Zero).
+        auto deadline = std::chrono::steady_clock::now() + std::chrono::microseconds(40);
+        while (std::chrono::steady_clock::now() < deadline) {}
 
         return recBuf;
     }
 
     WordBuffer VibrationSensorModule::transferBlocking(WordBuffer sendBuf) const {
         bool notBusy;
+        auto timeout = std::chrono::steady_clock::now() + std::chrono::seconds(30);
 
         do {
             if (gpio_read(gpioBusy, &notBusy) < 0) {
@@ -47,10 +49,16 @@ namespace vibration_daq {
 
             if (notBusy) {
                 return transfer(sendBuf);
-            } else {
-                DLOG_S(INFO) << name << " is busy.";
-                sleep_for(10ms);
             }
+
+            if (std::chrono::steady_clock::now() > timeout) {
+                LOG_F(ERROR, "%s: Timed out waiting for sensor to become ready. "
+                      "Check BUSY pin wiring (config busy_pin) and reset_pin connection.", name.c_str());
+                exit(1);
+            }
+
+            DLOG_S(INFO) << name << " is busy.";
+            sleep_for(10ms);
         } while (!notBusy);
 
         return {};

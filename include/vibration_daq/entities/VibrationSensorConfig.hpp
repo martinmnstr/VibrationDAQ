@@ -5,12 +5,15 @@
 
 #pragma once
 
+#include <cstdint>
+
 namespace vibration_daq {
     struct VibrationSensorConfig {
         std::string name;
         int busyPin;
         int resetPin;
         std::string spiPath;
+        uint32_t spiSpeed = 2000000;
         RecordingMode recordingMode;
         MFFTConfig mfftConfig;
         MTCConfig mtcConfig;

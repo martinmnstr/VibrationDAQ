@@ -23,7 +23,7 @@ using namespace vibration_daq;
 using namespace std::this_thread; // sleep_for, sleep_until
 using namespace std::chrono; // nanoseconds, system_clock, seconds
 
-static const int SPI_SPEED = 14000000;
+// SPI speed is now configured per-sensor via spi_speed in config.yaml (default: 2 MHz)
 gpio_t *gpioTrigger;
 gpio_t *gpioStatusLed;
 
@@ -195,7 +195,7 @@ bool setupVibrationSensorModules(const bool &externalTriggerActivated) {
         VibrationSensorModule vibrationSensorModule(vibrationSensorConfig.name);
         if (!vibrationSensorModule.setup(vibrationSensorConfig.resetPin, vibrationSensorConfig.busyPin,
                                          vibrationSensorConfig.spiPath,
-                                         SPI_SPEED)) {
+                                         vibrationSensorConfig.spiSpeed)) {
             LOG_S(ERROR) << "Could not setup vibration sensor: " << vibrationSensorConfig.name;
             return false;
         }

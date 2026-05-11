@@ -39,6 +39,11 @@ namespace vibration_daq {
             return false;
         }
 
+        if (!convertNode(node["spi_speed"], vibrationSensor.spiSpeed)) {
+            vibrationSensor.spiSpeed = 2000000;
+            LOG_S(WARNING) << vibrationSensor.name << ": spi_speed not in config, defaulting to 2MHz";
+        }
+
         std::string recordingModeString;
         if (!convertNode(node["recording_mode"], recordingModeString)) {
             LOG_S(WARNING) << "could not read decimation_factor from config";

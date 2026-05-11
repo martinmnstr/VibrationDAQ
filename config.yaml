@@ -9,6 +9,7 @@ sensors:
     busy_pin: 22
     reset_pin: 27
     spi_path: "/dev/spidev0.0"
+    spi_speed: 2000000
     recording_mode: MFFT
     MFFT_config: &mfftConfig
       decimation_factor: FACTOR_64
@@ -24,6 +25,7 @@ sensors:
     busy_pin: 24
     reset_pin: 23
     spi_path: "/dev/spidev0.1"
+    spi_speed: 2000000
     recording_mode: MFFT
     MFFT_config: *mfftConfig
     MTC_config: *mtcConfig
