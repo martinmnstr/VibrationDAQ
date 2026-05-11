@@ -57,7 +57,6 @@ namespace vibration_daq {
                 exit(1);
             }
 
-            DLOG_S(INFO) << name << " is busy.";
             sleep_for(10ms);
         } while (!notBusy);
 
