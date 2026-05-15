@@ -1,5 +1,5 @@
 # VibrationDAQ
-Data Acquisition (DAQ) of the [Analog Devices ADcmXL3021](https://www.analog.com/en/products/adcmxl3021.html#product-overview) vibration sensor. The VibrationDAQ was developed as part of an internship at [Wingtra](https://wingtra.com/) by [Jonas Lauener](https://www.jolau.ch/).  
+Data Acquisition (DAQ) of the [Analog Devices ADcmXL3021](https://www.analog.com/en/products/adcmxl3021.html#product-overview) vibration sensor. The VibrationDAQ was developed as part of an internship at [Wingtra](https://wingtra.com/) by [Jonas Lauener](https://www.jolau.ch/).
 
 **For any technical questions, please open an issue: https://github.com/jolau/VibrationDAQ/issues/new/choose**
 
@@ -9,7 +9,7 @@ Copyright (c) 2020, Jonas Lauener & Wingtra AG\
 ![VibrationDAQ](docs/vibrationdaq.jpg)
 
 ## Hardware
-- Raspberry Pi 
+- Raspberry Pi
 - [Analog Devices ADcmXL3021](https://www.analog.com/en/products/adcmxl3021.html#product-overview) vibration sensor capabilities
     - [Corrected data sheet](docs/ADcmXL3021_corrected.pdf)
     - Sensor orientation:\
@@ -27,17 +27,7 @@ Copyright (c) 2020, Jonas Lauener & Wingtra AG\
 - [Features a status LED](#status-led)
 
 ### Pinout Raspberry Pi
-![pinout rpi](docs/rpi_pinout.png)
-
-|       | pin | pin |       |
-|-------|-----|-----|-------|
-| RST 1 | 13  |     |       |
-| BSY 1 | 15  | 16  | RST 2 |
-| 3V3   | 17  | 18  | BSY 2 |
-| MOSI  | 19  | 20  | EMPTY |
-| MISO  | 21  | 22  | SYNC  |
-| SCLK  | 23  | 24  | CE 1  |
-| GND   | 25  | 26  | CE 2  |
+![pinout rpi](docs/ViPiLogger_pinout.png)
 
 The vibration sensor only works on the main SPI pins (SPI0) of the Raspberry Pi - the other SPI ports don't support SPI mode 3.
 
@@ -68,8 +58,8 @@ You can use it now with `vibration_daq_app [full path to config.yaml]`.
 7. `sudo make install`
 
 ### Enable/Disable auto-start
-1. Edit config.yaml path in vibration_daq.service file to own needs 
-2. `sudo systemctl enable [full path to vibration_daq.service file]`    
+1. Edit config.yaml path in vibration_daq.service file to own needs
+2. `sudo systemctl enable [full path to vibration_daq.service file]`
     This automatically links the service and enables it. Replace `enable` with `disable` to disable service.
 
 ## Dependencies
@@ -85,10 +75,10 @@ Many thanks to the authors of the following libraries:
 2. Mount the vibration sensor with the double sided tape [3M™ Adhesive Transfer Tape 950](https://www.digikey.ch/product-detail/en/3m-tc/3-4-5-950/3M9743-ND/2649288). This shouldn't distort the vibration too much.
 3. Do your measurement.
 4. Download the collected data over SFTP. I recommend to also download the used config file.
-6. Open a vibration CSV file in Google Sheets. 
-    - For FFT measurement: 
+6. Open a vibration CSV file in Google Sheets.
+    - For FFT measurement:
         - Hide the first two data points as these have usually very high magnitude and don't give meaningful information
-        - Plot the data using a column chart.  
+        - Plot the data using a column chart.
 
 ### Status led
 If the status led is enabled in config, it will glow when running:
@@ -100,8 +90,8 @@ Short primer on the syntax of yaml: https://learnxinyminutes.com/docs/yaml/
 
 ### Decimation Filter
 Setting the right `decimation_factor` is crucial for getting meaningful data. Choose it according to the maximum vibration frequency you're expecting.
-Of course, the decimation factor also affects the predefined FIR filters i.e. with a FACTOR_64, the LOW_PASS_10kHz is actually a 156 Hz low pass filter.  
- 
+Of course, the decimation factor also affects the predefined FIR filters i.e. with a FACTOR_64, the LOW_PASS_10kHz is actually a 156 Hz low pass filter.
+
 | **decimation_factor** | **Effective Sample Rate, fS (SPS)** | **Effective FFT Bin Size, f_MIN (Hz)** | **Effective Maximum FFT Frequency, f_MAX (Hz)** |
 |-------------------|---------------------------------|------------------------------------|---------------------------------------------|
 | FACTOR_1          | 220000                          | 53.71094                           | 110000                                      |
@@ -129,14 +119,15 @@ The `spectral_avg_count` determines the number of FFT records that the ADcmXL302
 ### Example config with explanation
 ```yaml
 storage_directory: "/home/pi/Documents/"
-recordings_count: 2 #number of recurring measurements, infinite if == 0 
-external_trigger: false # false: triggering over SPI; 
+recordings_count: 2 #number of recurring measurements, infinite if == 0
+external_trigger: false # false: triggering over SPI;
                         # true: triggering over dedicated pin, useful for triggering multiple sensor at exact same time (connect them to same pin)
 external_trigger_pin: 4 # only read if external_trigger == true
 status_led: true # enable/disable status led, blinks everytime a vibration file is written
 status_led_pin: 21  # only read if status_led == true
 sensors:
   - name: sensor1 #will be used for logging and filenames
+    spi_speed: 2000000
     busy_pin: 22 #BCM pin number
     reset_pin: 27 #BCM pin number
     spi_path: "/dev/spidev0.0"
@@ -152,6 +143,7 @@ sensors:
         fir_filter: CUSTOM
         custom_filter_taps: [6, 21, 53, 107, 193, 316, 480, 686, 930, 1203, 1490, 1774, 2034, 2251, 2407, 2489, 2489, 2407, 2251, 2034, 1774, 1490, 1203, 930, 686, 480, 316, 193, 107, 53, 21, 6]
   - name: sensor2
+    spi_speed: 2000000
     busy_pin: 24
     reset_pin: 23
     spi_path: "/dev/spidev0.1"
@@ -160,7 +152,7 @@ sensors:
 ```
 
 ## Example data
-The following data was collected on a self-made vibration bench. The bench consists of an unbalanced mass attached to an electrical motor. 
+The following data was collected on a self-made vibration bench. The bench consists of an unbalanced mass attached to an electrical motor.
 - [MFFT raw data example](docs/vibration_data_MFFT_2020-06-17T16_08_57.423_sensor1.csv)
     - Plot of MFFT data:\
        ![MFFT plot](docs/vibration_data_MFFT_2020-06-17T16_08_57.423_sensor1.png)
